@@ -16,7 +16,7 @@ namespace MVVM_Async.Async
     class CentralDispatch
     {
         SynchronizationContext mainThreadContext;
-        public CentralDispatch() 
+        public CentralDispatch()
         {
             mainThreadContext = SynchronizationContext.Current;
 
@@ -28,7 +28,7 @@ namespace MVVM_Async.Async
 
         #region Dispatch Methods
 
-        public void Dispatch(Action action) 
+        public void Dispatch(Action action)
         {
             Task.Factory.StartNew(action);
         }
@@ -42,7 +42,8 @@ namespace MVVM_Async.Async
         public void Dispatch<T, F>(T viewModel, Func<T, Action<F>> function, F obj)
         {
             var action = function(viewModel);
-            Task.Factory.StartNew(() => { action(obj); });
+            Task.Factory.StartNew(() => {
+                action(obj); });
         }
 
         public void Dispatch<T, F1, F2>(T viewModel, 
@@ -50,7 +51,8 @@ namespace MVVM_Async.Async
             F1 obj, F2 obj2)
         {
             var action = function(viewModel);
-            Task.Factory.StartNew(() => { action(obj, obj2); });
+            Task.Factory.StartNew(() => {
+                action(obj, obj2); });
         }
 
         public void Dispatch<T, F1, F2, F3>(T viewModel,
@@ -58,30 +60,26 @@ namespace MVVM_Async.Async
             F1 obj, F2 obj2, F3 obj3)
         {
             var action = function(viewModel);
-            Task.Factory.StartNew(() => { action(obj, obj2, obj3); });
+            Task.Factory.StartNew(() => {
+                action(obj, obj2, obj3); });
         }
 
         public void Dispatch<T>(Action<T> action, T obj)
         {
-            Task.Factory.StartNew(() => { action(obj); });
+            Task.Factory.StartNew(() => {
+                action(obj); });
         }
 
-        public void DispatchMain(Action action) 
+        public void DispatchMain(Action action)
         {
-            mainThreadContext.Post((o) => { action(); }, null);
+            mainThreadContext.Post((o) => {
+                action(); }, null);
         }
 
-        public void DispatchAsyncWaitAll(IEnumerable<Action> actions, Action callback) 
+        public void DispatchAsyncWaitAll(IEnumerable<Action> actions, Action callback)
         {
-            Task[] tasks = new Task[actions.Count()];
-            int i = 0;
-            foreach (var a in actions)
-            {
-                tasks[i] = new Task(a);
-                i++;
-            }
-
-            Task bg = new Task(() => {
+            var tasks = actions.Select(a => new Task(a)).ToArray();
+            var bg = new Task(() => {
                 Task.WaitAll(tasks);
                 DispatchMain(callback);
             });
